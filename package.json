@@ -1,0 +1,22 @@
+{
+	"name": "entries-to-object",
+	"version": "1.0.0",
+	"description": "Convert entries to objects",
+	"main": "build/index.js",
+	"type": "module",
+	"files": [
+		"/build/index.js"
+	],
+	"scripts": {
+		"test": "node source/test.js",
+		"build": "esbuild source/index.js --outfile=build/index.js --bundle --format=esm --minify",
+		"develop": "esbuild source/index.js --outfile=build/index.js --bundle --format=esm --sourcemap",
+		"prepare": "npm run build"
+	},
+	"keywords": [],
+	"author": "SubHero",
+	"license": "ISC",
+	"devDependencies": {
+		"esbuild": "^0.19.2"
+	}
+}
