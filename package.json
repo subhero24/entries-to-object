@@ -16,6 +16,10 @@
 	"keywords": [],
 	"author": "SubHero",
 	"license": "ISC",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/subhero24/entries-to-object"
+	},
 	"devDependencies": {
 		"esbuild": "^0.19.2"
 	}
