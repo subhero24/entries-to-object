@@ -1,6 +1,6 @@
 const arrayPartRegex = /(.+)(?:\[(\d*)\])/;
 
-export default function entriesToObject(entries) {
+export default function entriesToObject(entries = []) {
 	let result = {};
 	for (let [key, value] of entries) {
 		let part;
