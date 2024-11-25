@@ -18,9 +18,10 @@
 	"license": "ISC",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/subhero24/entries-to-object"
+		"url": "git+https://github.com/subhero24/entries-to-object.git"
 	},
 	"devDependencies": {
-		"esbuild": "^0.19.2"
+		"esbuild": "^0.19.2",
+		"prettier": "^3.3.3"
 	}
 }
