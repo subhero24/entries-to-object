@@ -1,7 +1,7 @@
 import Test from 'node:test';
 
 import assert from 'node:assert/strict';
-import entriesToObject from './index.js';
+import entriesToObject from '../index.js';
 
 Test('property', () => {
 	let data = [['a', 'x']];

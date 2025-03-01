@@ -1,87 +1,122 @@
-const arrayPartRegex = /(.+)(?:\[(\d*)\])/;
+const regex = /([a-zA-Z_$][a-zA-Z0-9_$]*)(?:\[(\d*)\])?(?:\.|$)/gy;
 
-export default function entriesToObject(entries = []) {
-	let result = {};
-	for (let [key, value] of entries) {
-		let part;
-		let root = result;
-		let parts = key.split('.');
+export default entriesToObject;
 
-		while ((part = parts.shift())) {
-			let [attribute, index] = part.match(arrayPartRegex)?.slice(1) ?? [part];
+export function getKey(object, key) {
+	let value = object;
+	let matches = [...key.matchAll(regex)];
+	for (let match of matches) {
+		let [attribute, index] = match.slice(1);
 
-			if (parts.length) {
-				if (index == undefined) {
-					if (root[attribute] == undefined) {
-						root[attribute] = {};
-					}
+		if (index) {
+			value = value[attribute][index];
+		} else {
+			value = value[attribute];
+		}
 
-					root = root[attribute];
-				} else {
-					if (root[attribute] == undefined) {
-						root[attribute] = [];
-					}
+		if (value == undefined) return;
+	}
 
-					let rootIndex = index;
-					if (rootIndex === '') {
-						let length = root[attribute].length;
-						if (length === 0) {
-							root = root[attribute][length] = {};
-						} else {
-							let maybeRoot = root[attribute][length - 1];
-							let maybeParts = [...parts];
-							if (typeof maybeRoot !== 'object') {
-								root = root[attribute][length] = {};
-							} else {
-								while ((part = maybeParts.shift())) {
-									let [attribute, index] = part.match(arrayPartRegex)?.slice(1) ?? [part];
+	return value;
+}
 
-									if (index == undefined) {
-										maybeRoot = maybeRoot[attribute];
-									} else if (index === '') {
-										break;
-									} else {
-										maybeRoot = maybeRoot[attribute][index];
-									}
+export function setKey(object, key, value) {
+	let root = object;
+	let matches = [...key.matchAll(regex)];
 
-									if (maybeRoot == undefined) {
-										break;
-									}
-								}
+	let i, j;
+	for (i = 0; i < matches.length - 1; i++) {
+		let [attribute, index] = matches[i].slice(1);
 
-								if (maybeParts.length === 0 && maybeRoot != undefined) {
-									root = root[attribute][length] = {};
-								} else {
-									root = root[attribute][length - 1];
-								}
-							}
-						}
-					} else {
-						let rootValue = root[attribute][rootIndex];
-						if (rootValue == undefined) {
-							rootValue = root[attribute][rootIndex] = {};
-						}
+		if (root[attribute] == undefined) {
+			root[attribute] = index == undefined ? {} : [];
+		}
 
-						root = rootValue;
-					}
-				}
+		root = root[attribute];
+
+		if (index === '') {
+			let length = root.length;
+			if (length === 0) {
+				root = root[length] = {};
 			} else {
-				if (index == undefined) {
-					root[attribute] = value;
+				let next = root[length - 1];
+
+				if (typeof next !== 'object') {
+					root = root[length] = {};
 				} else {
-					if (root[attribute] == undefined) {
-						root[attribute] = [];
+					for (j = i + 1; j < matches.length; j++) {
+						let [attribute, index] = matches[j].slice(1);
+
+						if (index == undefined) {
+							next = next[attribute];
+						} else if (index !== '') {
+							next = next[attribute][index];
+						} else {
+							break;
+						}
+
+						if (next == undefined) break;
 					}
 
-					if (index === '') {
-						root[attribute].push(value);
+					if (next !== undefined && j === matches.length) {
+						root = root[length] = {};
 					} else {
-						root[attribute][index] = value;
+						root = root[length - 1];
 					}
 				}
+			}
+		} else if (index) {
+			if (root[index] == undefined) {
+				root = root[index] = {};
 			}
 		}
 	}
 
+	let [attribute, index] = matches[i].slice(1);
+
+	if (index == undefined) {
+		root[attribute] = value;
+	} else {
+		if (root[attribute] == undefined) {
+			root[attribute] = [];
+		}
+
+		if (index === '') {
+			root[attribute].push(value);
+		} else {
+			root[attribute][index] = value;
+		}
+	}
+}
+
+export function entriesToObject(entries = []) {
+	let object = {};
+	for (let [key, value] of entries) {
+		setKey(object, key, value);
+	}
+	return object;
+}
+
+export function objectToEntries(object, prefix = '') {
+	let result = [];
+	for (let [key, value] of Object.entries(object)) {
+		let prefixedKey = `${prefix}${key}`;
+
+		if (typeof value !== 'object') {
+			result.push([prefixedKey, value]);
+		} else {
+			if (value instanceof Array) {
+				value.forEach((value, index) => {
+					if (typeof value !== 'object') {
+						result.push([`${prefixedKey}[${index}]`, value]);
+					} else {
+						result.push(...objectToEntries(value, `${prefixedKey}[${index}].`));
+					}
+				});
+			} else {
+				result.push(...objectToEntries(value, `${prefixedKey}.`));
+			}
+		}
+	}
 	return result;
 }
