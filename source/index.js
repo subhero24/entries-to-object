@@ -67,8 +67,10 @@ export function setKey(object, key, value) {
 			}
 		} else if (index) {
 			if (root[index] == undefined) {
-				root = root[index] = {};
+				root[index] = {};
 			}
+
+			root = root[index];
 		}
 	}
 
